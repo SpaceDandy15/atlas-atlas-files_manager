@@ -16,6 +16,11 @@ class UsersController {
     }
 
     try {
+      // Check if database is connected
+      if (!dbClient.isAlive()) {
+        return res.status(500).json({ error: 'Database not connected' });
+      }
+
       // Check if user already exists
       const existingUser = await dbClient.db.collection('users').findOne({ email });
       if (existingUser) {
