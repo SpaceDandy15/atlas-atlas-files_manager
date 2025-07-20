@@ -1,4 +1,6 @@
-import { MongoClient } from 'mongodb';
+// utils/db.js
+import pkg from 'mongodb';
+const { MongoClient } = pkg;
 
 // Setup MongoDB connection configuration
 const host = process.env.DB_HOST || 'localhost';
