@@ -15,4 +15,12 @@ router.get('/connect', AuthController.getConnect);
 router.get('/disconnect', AuthController.getDisconnect);
 router.get('/users/me', UsersController.getMe);
 
+// New file retrieval routes
+router.get('/files/:id', FilesController.getShow);
+router.get('/files', FilesController.getIndex);
+
+// New file publish/unpublish routes
+router.put('/files/:id/publish', FilesController.putPublish);
+router.put('/files/:id/unpublish', FilesController.putUnpublish);
+
 export default router;
