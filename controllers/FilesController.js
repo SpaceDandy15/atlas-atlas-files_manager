@@ -133,6 +133,130 @@ class FilesController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  static async putPublish(req, res) {
+    try {
+      // Get token from headers
+      const token = req.headers['x-token'];
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user ID from Redis using the token
+      const redisKey = `auth_${token}`;
+      const userId = await redisClient.get(redisKey);
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Check if database is connected
+      if (!dbClient.isAlive()) {
+        return res.status(500).json({ error: 'Database not connected' });
+      }
+
+      // Get file ID from URL parameters
+      const fileId = req.params.id;
+      
+      // Validate ObjectId format
+      if (!ObjectId.isValid(fileId)) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+
+      // Find and update the file document
+      const result = await dbClient.db.collection('files').findOneAndUpdate(
+        {
+          _id: new ObjectId(fileId),
+          userId: new ObjectId(userId)
+        },
+        {
+          $set: { isPublic: true }
+        },
+        {
+          returnDocument: 'after'
+        }
+      );
+
+      if (!result.value) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+
+      // Return the updated file document
+      return res.status(200).json({
+        id: result.value._id,
+        userId: result.value.userId,
+        name: result.value.name,
+        type: result.value.type,
+        isPublic: result.value.isPublic,
+        parentId: result.value.parentId
+      });
+
+    } catch (error) {
+      console.error('Error in putPublish:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  static async putUnpublish(req, res) {
+    try {
+      // Get token from headers
+      const token = req.headers['x-token'];
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user ID from Redis using the token
+      const redisKey = `auth_${token}`;
+      const userId = await redisClient.get(redisKey);
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Check if database is connected
+      if (!dbClient.isAlive()) {
+        return res.status(500).json({ error: 'Database not connected' });
+      }
+
+      // Get file ID from URL parameters
+      const fileId = req.params.id;
+      
+      // Validate ObjectId format
+      if (!ObjectId.isValid(fileId)) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+
+      // Find and update the file document
+      const result = await dbClient.db.collection('files').findOneAndUpdate(
+        {
+          _id: new ObjectId(fileId),
+          userId: new ObjectId(userId)
+        },
+        {
+          $set: { isPublic: false }
+        },
+        {
+          returnDocument: 'after'
+        }
+      );
+
+      if (!result.value) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+
+      // Return the updated file document
+      return res.status(200).json({
+        id: result.value._id,
+        userId: result.value.userId,
+        name: result.value.name,
+        type: result.value.type,
+        isPublic: result.value.isPublic,
+        parentId: result.value.parentId
+      });
+
+    } catch (error) {
+      console.error('Error in putUnpublish:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 export default FilesController;
